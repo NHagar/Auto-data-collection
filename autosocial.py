@@ -16,7 +16,6 @@ from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 
-
 if dt.datetime.today().weekday() == 0:
     #TWITTER
     auth = tweepy.OAuthHandler(os.environ.get('TWITTER_ONE'), os.environ.get('TWITTER_TWO'))
@@ -80,7 +79,7 @@ if dt.datetime.today().weekday() == 0:
     page_id = '345450075476606'
     access_token = os.environ.get('FACEBOOK')
 
-    #URL request just for shares
+    #URL request for shares and fan count
     def request_until_succeed(url):
         req = urllib2.Request(url)
         success = False
@@ -189,19 +188,12 @@ if dt.datetime.today().weekday() == 0:
                         'shares' : list(dff.sort_values('total engagement', ascending=False)['shares'])[0:5]})
     topf['url'] = ['https://www.facebook.com/PacificStand/posts/' + str(i) for i in topf['url']]
 
-
     #SITE ANALYTICS
     ASCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
     AKEY_FILE_LOCATION = 'client_secrets.json'
     AVIEW_ID = os.environ.get('GOOGLE_VIEW_ID')
 
-
     def initialize_analyticsreporting():
-      """Initializes an Analytics Reporting API V4 service object.
-
-      Returns:
-        An authorized Analytics Reporting API V4 service object.
-      """
       credentials = ServiceAccountCredentials.from_json_keyfile_name(
           AKEY_FILE_LOCATION, ASCOPES)
 
@@ -211,13 +203,6 @@ if dt.datetime.today().weekday() == 0:
       return analytics
 
     def get_report(analytics):
-      """Queries the Analytics Reporting API V4.
-
-      Args:
-        analytics: An authorized Analytics Reporting API V4 service object.
-      Returns:
-        The Analytics Reporting API V4 response.
-      """
       return analytics.reports().batchGet(
           body={
             'reportRequests': [
@@ -230,11 +215,6 @@ if dt.datetime.today().weekday() == 0:
       ).execute()
 
     def print_response(response):
-      """Parses and prints the Analytics Reporting API V4 response.
-
-      Args:
-        response: An Analytics Reporting API V4 response.
-      """
       for report in response.get('reports', []):
         columnHeader = report.get('columnHeader', {})
         dimensionHeaders = columnHeader.get('dimensions', [])
@@ -251,13 +231,6 @@ if dt.datetime.today().weekday() == 0:
 
     #TOP POSTS
     def get_report_posts(analytics):
-      """Queries the Analytics Reporting API V4.
-
-      Args:
-        analytics: An authorized Analytics Reporting API V4 service object.
-      Returns:
-        The Analytics Reporting API V4 response.
-      """
       return analytics.reports().batchGet(
           body={
             'reportRequests': [
@@ -272,11 +245,6 @@ if dt.datetime.today().weekday() == 0:
       ).execute()
 
     def print_response_posts(response_posts):
-      """Parses and prints the Analytics Reporting API V4 response.
-
-      Args:
-        response: An Analytics Reporting API V4 response.
-      """
       pages = []
       for report in response_posts.get('reports', []):
         columnHeader = report.get('columnHeader', {})
@@ -317,22 +285,12 @@ if dt.datetime.today().weekday() == 0:
     except ImportError:
         flags = None
 
-    # If modifying these scopes, delete your previously saved credentials
-    # at ~/.credentials/sheets.googleapis.com-python-quickstart.json
     SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
     CLIENT_SECRET_FILE = 'client_secret.json'
     APPLICATION_NAME = 'Google Sheets API Python Quickstart'
 
     #get credentials
     def get_credentials():
-        """Gets valid user credentials from storage.
-
-        If nothing has been stored, or if the stored credentials are invalid,
-        the OAuth2 flow is completed to obtain the new credentials.
-
-        Returns:
-            Credentials, the obtained credential.
-        """
         home_dir = os.path.expanduser('~')
         credential_dir = os.path.join(home_dir, '.credentials')
         if not os.path.exists(credential_dir):
@@ -354,12 +312,6 @@ if dt.datetime.today().weekday() == 0:
 
     #save values
     def main():
-        """Shows basic usage of the Sheets API.
-
-        Creates a Sheets API service object and prints the names and majors of
-        students in a sample spreadsheet:
-        https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-        """
         credentials = get_credentials()
         http = credentials.authorize(httplib2.Http())
         discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
@@ -381,12 +333,6 @@ if dt.datetime.today().weekday() == 0:
             valueInputOption=value_input_option, body=body).execute()
 
     def main2():
-        """Shows basic usage of the Sheets API.
-
-        Creates a Sheets API service object and prints the names and majors of
-        students in a sample spreadsheet:
-        https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-        """
         credentials = get_credentials()
         http = credentials.authorize(httplib2.Http())
         discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
