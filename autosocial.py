@@ -19,11 +19,10 @@ import urllib2
 import time
 import datetime
 
-
 if datetime.datetime.today().weekday() == 0:
     #TWITTER
-    auth = tweepy.OAuthHandler('61Na8Rux5ctU8vq7CTT3tpmoq', 'stUwgMMLeaY1PHCmnH3LtcC4tKOmRtohsMYXcdhUNdT6Fncfjh')
-    auth.set_access_token('987585836-a0v50E80sjArhFu4wFAXTYW3WpEyL0VN9KsKUcvs', 'LA0n9vW6SeR62I1ZUJJkmwyfPAEx5I07C8ZPJp0UKeQUG')
+    auth = tweepy.OAuthHandler(os.environ.get('TWITTER_ONE'), os.environ.get('TWITTER_TWO'))
+    auth.set_access_token(os.environ.get('TWITTER_THREE'), os.environ.get('TWITTER_FOUR'))
     api = tweepy.API(auth)
 
     #collect recent timeline pages
@@ -78,10 +77,10 @@ if datetime.datetime.today().weekday() == 0:
 
 
     #FACEBOOK
-    graph = facebook.GraphAPI(access_token='EAAQSQ4ZCXLwgBAM8JmPRPBEPXgQF8ZAPJ6W4l9Fsq2wwr0ilroczIaZCdI4b5IWPkdHKBPGEEV2FyWrBe7Yu9SwahTIx6c8K4ogAtXLbRnXpW6hPWUt6ZAoMZCl4kNEu9nsVmKBIYlUZAtEysUCZB2BX6u8mDblODZAZAYq9h2BZBaQmxCFHdTm5jN')
+    graph = facebook.GraphAPI(access_token=os.environ.get('FACEBOOK'))
     feed = graph.get_object('345450075476606')
     page_id = '345450075476606'
-    access_token='EAAQSQ4ZCXLwgBAM8JmPRPBEPXgQF8ZAPJ6W4l9Fsq2wwr0ilroczIaZCdI4b5IWPkdHKBPGEEV2FyWrBe7Yu9SwahTIx6c8K4ogAtXLbRnXpW6hPWUt6ZAoMZCl4kNEu9nsVmKBIYlUZAtEysUCZB2BX6u8mDblODZAZAYq9h2BZBaQmxCFHdTm5jN'
+    access_token = os.environ.get('FACEBOOK')
 
     #URL request just for shares
     def request_until_succeed(url):
@@ -196,7 +195,7 @@ if datetime.datetime.today().weekday() == 0:
     #SITE ANALYTICS
     ASCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
     AKEY_FILE_LOCATION = 'client_secrets.json'
-    AVIEW_ID = '122434448'
+    AVIEW_ID = os.environ.get('GOOGLE_VIEW_ID')
 
 
     def initialize_analyticsreporting():
@@ -370,7 +369,7 @@ if datetime.datetime.today().weekday() == 0:
         service = discovery.build('sheets', 'v4', http=http,
                                   discoveryServiceUrl=discoveryUrl)
 
-        spreadsheetId = '1NQt7wa9XSvtswcdy_uZ0Dg-Y-kIQ4dLwEPcffTMla-M'
+        spreadsheetId = os.environ.get('SHEET_ID')
         range_name='A6:A7'
         value_input_option='RAW'
 
@@ -397,7 +396,7 @@ if datetime.datetime.today().weekday() == 0:
         service = discovery.build('sheets', 'v4', http=http,
                                   discoveryServiceUrl=discoveryUrl)
 
-        spreadsheetId = '1NQt7wa9XSvtswcdy_uZ0Dg-Y-kIQ4dLwEPcffTMla-M'
+        spreadsheetId = os.environ.get('SHEET_ID')
         range_name='V23:W23'
         value_input_option='RAW'
 
