@@ -424,4 +424,4 @@ if datetime.datetime.today().weekday() == 0:
     main()
     main2()
 else:
-    print 'It\'s not Monday.'
+    print('It\'s not Monday.')
