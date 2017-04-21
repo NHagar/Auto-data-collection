@@ -16,62 +16,59 @@ from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 
+auth = tweepy.OAuthHandler(os.environ.get('TWITTER_ONE'), os.environ.get('TWITTER_TWO'))
+auth.set_access_token(os.environ.get('TWITTER_THREE'), os.environ.get('TWITTER_FOUR'))
+api = tweepy.API(auth)
+
 if dt.datetime.today().weekday() == 0:
     #TWITTER
-    auth = tweepy.OAuthHandler(os.environ.get('TWITTER_ONE'), os.environ.get('TWITTER_TWO'))
-    auth.set_access_token(os.environ.get('TWITTER_THREE'), os.environ.get('TWITTER_FOUR'))
-    api = tweepy.API(auth)
+    #follow count
+    def twitter_followers():
+        tuser = api.get_user('PacificStand')
+        follow_count = tuser.followers_count
+        return follow_count
 
-    #collect recent timeline pages
-    pgs = []
-    for page in tweepy.Cursor(api.user_timeline, screen_name='PacificStand', include_rts=False).pages(20):
-        pgs.append(page)
+    def twitter_tweets():
+        #collect recent timeline pages
+        pgs = []
+        for page in tweepy.Cursor(api.user_timeline, screen_name='PacificStand', include_rts=False).pages(20):
+            pgs.append(page)
 
-    #empty lists for dataframe
-    rts = []
-    favs = []
-    dtime = []
-    text = []
-    ids = []
+        #empty list for dataframe
+        twitlist = []
 
-    #collect tweet info
-    for i in pgs:
-        for j in i:
-            rts.append(j._json['retweet_count'])
-            favs.append(j.favorite_count)
-            dtime.append(j._json['created_at'])
-            text.append(j.text)
-            ids.append(j.id)
+        #collect tweet info
+        for i in pgs:
+            for j in i:
+                twitlist.append([j._json['retweet_count'], j.favorite_count,
+                j._json['created_at'], j.text, j.id])
 
-    #Get follower count
-    tuser = api.get_user('PacificStand')
-    follow_count = tuser.followers_count
+        df = pd.DataFrame(twitlist, columns=['retweets', 'favs', 'datetime', 'text', 'ids'])
+        df['datetime'] = pd.to_datetime(df['datetime'])
+        df['date'] = df['datetime'].apply(pd.datetools.normalize_date)
+        df['total engagement'] = df['retweets'] + df['favs']
+        df['week'] = df['date'].dt.week
+        thisweek = dt.datetime.today().isocalendar()[1]
+        #limit to last week's tweets
+        df = df[df['week'] == thisweek-1]
+        return df
 
-    #build dataframe
-    df = pd.DataFrame()
-    df['retweets'] = rts
-    df['favs'] = favs
-    df['datetime'] = dtime
-    df['text'] = text
-    df['ids'] = ids
-    df['datetime'] = pd.to_datetime(df['datetime'])
-    df['date'] = df['datetime'].apply(pd.datetools.normalize_date)
-    df['total engagement'] = df['retweets'] + df['favs']
-    df['week'] = df['date'].dt.week
-    thisweek = dt.datetime.today().isocalendar()[1]
+    def twitter_tops():
+        frame = twitter_tweets()
+        #output data
+        alltweets = frame['text'].count()
+        allretweets = frame['retweets'].sum()
+        allfavs = frame['favs'].sum()
+        topt = pd.DataFrame({'url' : list(frame.sort_values('total engagement', ascending=False)['ids'])[0:5],
+                         'retweets' : list(frame.sort_values('total engagement', ascending=False)['retweets'])[0:5],
+                         'favs' : list(frame.sort_values('total engagement', ascending=False)['favs'])[0:5]})
+        topt['url'] = ['http://twitter.com/pacificstand/status/' + str(i) for i in topt['url']]
+        return alltweets, allretweets, allfavs, topt
 
-    #limit to last week's tweets
-    df = df[df['week'] == thisweek-1]
-
-    #output data
-    alltweets = df['text'].count()
-    allretweets = df['retweets'].sum()
-    allfavs = df['favs'].sum()
-    topt = pd.DataFrame({'url' : list(df.sort_values('total engagement', ascending=False)['ids'])[0:5],
-                       'retweets' : list(df.sort_values('total engagement', ascending=False)['retweets'])[0:5],
-                       'favs' : list(df.sort_values('total engagement', ascending=False)['favs'])[0:5]})
-    topt['url'] = ['http://twitter.com/pacificstand/status/' + str(i) for i in topt['url']]
-
+    def twitter_pipe():
+        followers = twitter_followers()
+        tweets_rts_favs_tops = twitter_tops()
+        return followers, tweets_rts_favs_tops
 
     #FACEBOOK
     graph = facebook.GraphAPI(access_token=os.environ.get('FACEBOOK'))
@@ -324,9 +321,10 @@ if dt.datetime.today().weekday() == 0:
         value_input_option='RAW'
 
         values = [[str(df['date'].min())[:-8] + ' - ' + str(df['date'].max())[:-8],
-        allretweets / alltweets, allfavs / alltweets, alltweets/7, allreacts / allposts, allposts/7, allshares / allposts, analytics_main() / 7, '',
-        str(df['date'].min())[:-8] + ' - ' + str(df['date'].max())[:-8], allretweets, allfavs,
-        alltweets, follow_count, allreacts, allposts, allshares, fan_count, analytics_main(), '']]
+        twitter_numbers[1][1] / twitter_numbers[1][0], twitter_numbers[1][2] / twitter_numbers[1][0], twitter_numbers[1][0]/7,
+        allreacts / allposts, allposts/7, allshares / allposts, analytics_main() / 7, '',
+        str(df['date'].min())[:-8] + ' - ' + str(df['date'].max())[:-8], twitter_numbers[1][1], twitter_numbers[1][2],
+        twitter_numbers[1][0], twitter_numbers[0], allreacts, allposts, allshares, fan_count, analytics_main(), '']]
         body = {'values' : values}
         result = service.spreadsheets().values().append(
             spreadsheetId=spreadsheetId, range=range_name,
@@ -364,6 +362,7 @@ if dt.datetime.today().weekday() == 0:
             spreadsheetId=spreadsheetId, range=range_name,
             valueInputOption=value_input_option, body=body).execute()
 
+    twitter_numbers = twitter_pipe()
     main()
     main2()
 else:
