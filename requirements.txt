@@ -1,0 +1,7 @@
+oaut2client==4.0.0
+tweepy==3.5.0
+pandas==0.18.1
+requests==2.13.0
+facebook-sdk==2.0.0
+google-api-python-client==1.6.2
+cryptography==1.4
