@@ -1,25 +1,23 @@
 from __future__ import print_function
 import httplib2
 import os
+import tweepy
+import pandas as pd
+import facebook
+import requests
+import datetime as dt
+import json
+import urllib2
+import time
 from apiclient import discovery
 from apiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
-import tweepy
-import pickle
-import pandas as pd
-import facebook
-import requests
-from time import sleep
-import datetime as dt
-import json
-import urllib2
-import time
-import datetime
 
-if datetime.datetime.today().weekday() == 0:
+
+if dt.datetime.today().weekday() == 0:
     #TWITTER
     auth = tweepy.OAuthHandler(os.environ.get('TWITTER_ONE'), os.environ.get('TWITTER_TWO'))
     auth.set_access_token(os.environ.get('TWITTER_THREE'), os.environ.get('TWITTER_FOUR'))
@@ -95,7 +93,7 @@ if datetime.datetime.today().weekday() == 0:
                 print(e)
                 time.sleep(5)
 
-                print("Error for URL %s: %s" % (url, datetime.datetime.now()))
+                print("Error for URL %s: %s" % (url, dt.datetime.now()))
 
         return response.read()
 
